@@ -1,0 +1,47 @@
+@page "/bookings-auto"
+@{
+    if (!await Html.EnsureRoleAsync("Employee")) return;
+    ViewData["Title"] = "Bookings AutoQueryGrid";
+}
+
+<div class="mt-3 mx-auto max-w-fit">
+    <h2 class="mb-8 py-2 text-center text-3xl font-bold text-gray-900 dark:text-gray-100 sm:text-4xl">
+      @ViewData["Title"]
+    </h2>
+
+    <div id="bookings"></div>
+</div>
+
+<script type="module">
+import { ref } from "vue"
+import { mount, client } from "/mjs/app.mjs"
+import { QueryCoupons } from "/mjs/dtos.mjs"
+const Bookings = {
+    template:/*html*/`
+        <AutoQueryGrid type="Booking" selected-columns="id,name,cost,bookingStartDate,bookingEndDate,discount,createdBy">
+          <template #discount="{ discount }">
+            <TextLink v-if="discount" class="flex items-end" v-on:click.stop="showCoupon(discount.id)" :title="discount.id">
+              <Icon class="w-5 h-5 mr-1" type="Coupon" />
+              <PreviewFormat :value="discount.description" />
+            </TextLink>
+          </template>
+        </AutoQueryGrid>
+        <AutoEditForm v-if="coupon" type="UpdateCoupon" v-model="coupon" v-on:done="close" v-on:save="close" />
+        <div class="mt-5 flex">
+            <SrcLink href="https://github.com/NetCoreTemplates/vue-mjs/blob/main/ExampleOpenAiPlugin.ServiceModel/Bookings.cs" />
+            <SrcLink href="https://github.com/NetCoreTemplates/vue-mjs/blob/main/ExampleOpenAiPlugin/Pages/BookingsAuto.cshtml" />
+        </div>`,
+    setup() {
+        const coupon = ref()
+        async function showCoupon(id) {
+            const api = await client.api(new QueryCoupons({ id }))
+            if (api.succeeded) {
+                coupon.value = api.response.results[0]
+            }
+        }
+        const close = () => coupon.value = null 
+        return { coupon, showCoupon, close }
+    }
+}
+mount("#bookings", Bookings)
+</script>

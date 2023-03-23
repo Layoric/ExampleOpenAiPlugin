@@ -1,0 +1,29 @@
+using System.Net;
+using System.Text;
+using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using ExampleOpenAiPlugin.ServiceModel.Types;
+using ServiceStack.Text;
+
+[assembly: HostingStartup(typeof(ExampleOpenAiPlugin.ConfigureUi))]
+
+namespace ExampleOpenAiPlugin;
+
+public class ConfigureUi : IHostingStartup
+{
+    public void Configure(IWebHostBuilder builder) => builder
+        .ConfigureAppHost(appHost => {
+            RazorPage.Config = new() {
+                ForbiddenPartial = "~/Pages/Shared/Forbidden.cshtml", //Optional. render error in page instead
+            };
+            
+            //Allow Referencing in #Script expressions, e.g. [Input(EvalAllowableEntries)]
+            appHost.ScriptContext.Args[nameof(AppData)] = AppData.Instance;
+        });
+}
+
+// Shared App Data
+public class AppData
+{
+    internal static readonly AppData Instance = new();
+}
