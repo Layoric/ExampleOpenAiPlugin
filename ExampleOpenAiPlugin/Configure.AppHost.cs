@@ -27,7 +27,7 @@ public class AppHost : AppHostBase, IHostingStartup
         }, allowCredentials:true));
 
         Plugins.Add(new OpenApiFeature());
-        Plugins.Add(new OpenAiFeature
+        var openAiFeature = new OpenAiFeature
         {
             OpenAiManifest = new OpenAiManifest
             {
@@ -43,7 +43,17 @@ public class AppHost : AppHostBase, IHostingStartup
                 ContactEmail = "darren@reidmail.org",
                 LegalInfoUrl = "https://www.example.com/legal"
             }
-        });
+        };
+        if (HostingEnvironment.IsProduction())
+        {
+            openAiFeature.OpenAiManifest.Api = new OpenAiManifestApi
+            {
+                Type = "openai",
+                Url = "https://todo-openai.reidodon.net/openapi.json",
+                IsUserAuthenticated = false
+            };
+        }
+        Plugins.Add(openAiFeature);
         
     }
 }
